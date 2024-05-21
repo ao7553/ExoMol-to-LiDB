@@ -1,7 +1,4 @@
-==============
-
 ExoMol-to-LiDB
-
 ==============
 
 A Python software suite for processing molecular line lists from the 
@@ -476,68 +473,6 @@ calculated partial lifetimes. The same example of the ``CN`` molecule gives
     100, 31, 0.00029494955495862026
 
 The ``i``, ``f`` values refer to the ids of the *lumped* states.
-
-
-The ``exomol2lida`` algorithm
-=============================
-
-In this section, the main state-lumping algorithm is briefly described verbally. The
-algorithm follows these steps:
-
-1.  Filter the original states from the .states file. This is where the input parameters
-    ``energy_max``, ``only_with`` and ``only_without`` come in, see the *inputs* section.
-    All the original states which do not survive this filtering will be completely
-    ignored for the further calculations.
-
-2.  Define the lumped states, create mapping between the original state ids and the lumps.
-    Each lumped state is uniquely identified by the set of distinct values of the columns
-    defined by the ``resolve_el`` and ``resolve_vib`` in the input file. In the example
-    case of ``{..., "resolve_vib": ["v1", "v2", "v3"], "resolve_el": ["State"], ...}``,
-    each lumped state is a collection of distinct values of the ``State, v1, v2, v3``
-    columns from the ExoMol .states file. Each lump will consist of a number of original
-    ExoMol states characterised with the same resolved quanta, but generally with different
-    values under *other* columns, and other quanta, such as "+/-", "J", etc. A mapping
-    is created between the lumped indices ``i`` and the original states indices ``i_orig``,
-    ``i -> {i_orig}``
-
-3.  Assign energies to the lumped states. Within each lump, the lowest-J states are
-    identified and the energy of the lump is set to be the average of the original
-    resolved states with the lowest J number, weighted by the ``g_tot`` total
-    degeneracies.
-
-4.  Lump the transitions and calculate the partial lifetimes of the lumped transitions.
-    First, all the in-lump transitions are ignored and not used in any way in the
-    calculations. Also, any transitions from and to a non-existing lump (such as to
-    and from the original states that did not survive the filtering within the state
-    lumping process, either too high energy, or regarding the ``only_with``, ``only_without``
-    parameters) are completely ignored.
-    If ``i``, ``f`` are the indices of the lumped states and ``i_orig``, ``f_orig`` are
-    indices of the filtered original states from the .trans file, the partial lifetimes
-    of each *lumped* transition ``i -> f`` is calculated as
-
-    .. math::
-
-        \tau_{i \to f} = \mathrm{avg}_{f_\mathrm{orig} \in f} (\tau_{i \to f_\mathrm{orig}}),
-
-        \frac{1}{\tau_{i \to f_\mathrm{orig}}} = \sum_{i_\mathrm{orig} \in i} A_{i_\mathrm{orig} \to f_\mathrm{orig}}.
-
-    Here, ``A`` refers to the einstein coefficients from the original .trans file.
-
-5.  Calculate the total lifetimes of the lumped states, as
-
-    .. math::
-
-        \frac{1}{\tau_i} = \sum_{f} \tau_{i \to f}.
-
-The algorithm described above is implemented in the ``exomol2lida.process_dataset``
-module inside the ``DataProcessor`` class. The class is well documented and the
-docstrings and the in-line comments serve as the best source of documentation and
-usage. A the end of the processing workflow, most of the output files (discussed above)
-are created. Apart the ``DataProcessor``, there is also the
-``exomol2lida.postprocess_dataset.DatasetPostProcessor`` class, which handles the
-conversion between electronic states as are in the ExoMol database, and ``pyvalem``
-compatible molecular term symbol labels expected by the LiDB database.
-
 
 The top-level scripts
 =====================
