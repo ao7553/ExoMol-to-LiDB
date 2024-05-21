@@ -1,4 +1,4 @@
-#ExoMol-to-LiDB
+# ExoMol-to-LiDB
 
 A Python software suite for processing molecular line lists from the 
 `ExoMol database <https://www.exomol.com/>`_ into standardised input files to populate the
